@@ -1,8 +1,9 @@
 --[[
-    BEHAVIOR TREES V5
+    BEHAVIOR TREES V5.1
     
 	Originally by iniich_n and tyridge77: https://devforum.roblox.com/t/behaviortree2-create-complex-behaviors-with-ease/451047
 	Forked and improved by defaultio
+	Forked again by OssieNomae
 
 	Improvements/changes:
 		- Decorators will work as expected when parents of arbitrary nodes, instead of only Task nodes
@@ -60,6 +61,9 @@
 	-- Fixed critical issue where actors using the same tree borrowed the same running/paused state, effectively breaking all trees used by multiple actors(woops!)
 	-- Added Metaprox's "External Task" fork, which allows you to use Rojo with BTrees
 	
+	Changes by OssieNomae(May 16th, 2026)
+		- Added support for PascalCase for start, finish & run (Start, Finish & Run) in tasks
+	
 --]]
 
 
@@ -70,7 +74,6 @@ local IsStudio = RunService:IsRunning() and RunService:IsStudio()
 local BehaviorTree = {}
 
 local SUCCESS,FAIL,RUNNING = 1,2,3
-
 
 -- Used by the BehaviorTree Editor plugin 
 local RunningTreesFolder
@@ -143,12 +146,12 @@ local function ProcessNode(node, nodes)
 	--------- LEAF NODES ---------
 
 	if node.type == "task" then
-		assert(node.params.run, "Can't process tree; task leaf node has no run func parameter")
+		assert(node.params.run or node.params.Run, "Can't process tree; task leaf node has no run func parameter")
 
 		local taskNode = addNode("task")
-		taskNode.start = node.params.start
-		taskNode.run = node.params.run
-		taskNode.finish = node.params.finish
+		taskNode.start = node.params.start or node.params.Start
+		taskNode.run = node.params.run or node.params.Run
+		taskNode.finish = node.params.finish or node.params.Finish
 		taskNode.onsuccess = true
 		taskNode.onfail = false
 		taskNode.nodefolder = node.params.nodefolder
@@ -437,7 +440,7 @@ local TreeProto = {}
 -- Calls finish() on the running task of the tree, and sets the tree index back to 1
 -- Should be used if you want to cancel out of a tree to swap to another(for instance in the case of a state change)
 
-function TreeProto:abort(obj,...)
+function TreeProto:abort(obj, ...)
 	assert(typeof(obj) == "table","The first argument of a behavior tree's abort method must be a table!")
 	local nodes = self.nodes
 	local data = self.DataLookup[obj]
@@ -445,13 +448,13 @@ function TreeProto:abort(obj,...)
 	if not data then
 		return
 	end
-	
+
 	local index = data.index 
-	
+
 	local node = nodes[index]
 	if node.type == "task" then
 		if node.finish then
-			node.finish(obj,FAIL,...)
+			node.finish(obj, FAIL, ...)
 		end
 	end
 	data.index = 1
@@ -471,7 +474,7 @@ end
 -- onfail final nodes will point to #nodes + 2, which indicates a tree outcome of fail
 
 
-function TreeProto:run(obj,...)	
+function TreeProto:run(obj, ...): number?
 	assert(typeof(obj) == "table","The first argument of a behavior tree's run method must be a table!")
 
 
@@ -519,10 +522,10 @@ function TreeProto:run(obj,...)
 		DebugEntityNode = entity.Node
 	end
 	--
-	
+
 
 	local nodes = self.nodes
-	
+
 	--[[ Get data for this object or create new ]]
 	local data = self.DataLookup[obj]
 	if not data then
@@ -530,7 +533,7 @@ function TreeProto:run(obj,...)
 		self.DataLookup[obj] = data
 	end
 	--
-		
+
 	if data.running then
 		-- warn(debug.traceback("Tried to run BehaviorTree while it was already running"))
 		return

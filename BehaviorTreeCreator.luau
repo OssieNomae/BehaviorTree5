@@ -1,5 +1,5 @@
 --[[
-    BEHAVIOR TREE CREATOR V5
+    BEHAVIOR TREE CREATOR V5.1
 	
 	Originally by tyridge77: https://devforum.roblox.com/t/btrees-visual-editor-v2-0/461015
 	Forked and improved by defaultio
@@ -14,13 +14,16 @@
 	- Added BehaviorTreeCreator:RegisterBlackboard(name,table)
 		- This is used in conjunction with the new blackboard query node
 	- Changed up some various internal stuff
+	
+	Changes by OssieNomae(May 16th, 2026)
+	- Added support for PascalCase for start, finish & run (Start, Finish & Run) in tasks
 --]]
 
 local CollectionService = game:GetService("CollectionService")
 local TREE_TAG = "_BTree"
 
 local TreeCreator = {}
-local BehaviorTree3 = require(script.BehaviorTree5)
+local BehaviorTree = require(script.BehaviorTree)
 
 local Trees = {}
 local SourceTasks = {}
@@ -44,7 +47,7 @@ end
 
 function TreeCreator:RegisterSharedBlackboard(index,tab)
 	assert(index and tab and typeof(index) == "string" and typeof(tab) == "table","RegisterSharedBlackboard takes two arguments in the form of [string] index,[table] table")
-	BehaviorTree3.SharedBlackboards[index] = tab
+	BehaviorTree.SharedBlackboards[index] = tab
 end
 
 
@@ -129,15 +132,15 @@ function TreeCreator:_buildNode(folder)
 	if nodeType == "Task" then
 		local sourcetask = self:_getSourceTask(folder)
 		assert(sourcetask, "could't build tree; task node had no module")
-		parameters.start = sourcetask.start
-		parameters.run = sourcetask.run
-		parameters.finish = sourcetask.finish
+		parameters.start = sourcetask.start or sourcetask.Start
+		parameters.run = sourcetask.run or sourcetask.Run
+		parameters.finish = sourcetask.finish or sourcetask.Finish
 	elseif nodeType == "External Task" then
 		local sourcetask = self:_getExternalSourceTask(folder)
 		assert(sourcetask, "could't build tree; external task node had no source")
-		parameters.start = sourcetask.start
-		parameters.run = sourcetask.run
-		parameters.finish = sourcetask.finish
+		parameters.start = sourcetask.start or sourcetask.Start
+		parameters.run = sourcetask.run or sourcetask.Run
+		parameters.finish = sourcetask.finish or sourcetask.Finish
 	elseif nodeType == "Tree" then
 		local tree = self:_getTreeFromId(parameters.treeid)
 		assert(tree, string.format("could't build tree; couldn't get tree object for tree node with TreeID:  %s!",tostring(parameters.treeid)))
@@ -145,7 +148,7 @@ function TreeCreator:_buildNode(folder)
 	end
 
 	-- Initialize node with BehaviorTree3
-	local node = BehaviorTree3[nodeType](parameters)
+	local node = BehaviorTree[nodeType](parameters)
 	node.weight=weight
 
 	return node
@@ -161,7 +164,7 @@ function TreeCreator:_createTree(treeFolder)
 
 	local firstNodeFolder = RootFolder.Outputs:GetChildren()[1].Value
 	local root = self:_buildNode(firstNodeFolder)
-	local Tree = BehaviorTree3:new({tree=root,treeFolder = treeFolder})
+	local Tree = BehaviorTree:new({tree=root,treeFolder = treeFolder})
 	Trees[treeFolder] = Tree
 	TreeIDs[treeFolder.Name] = Tree
 	return Tree	
