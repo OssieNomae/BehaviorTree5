@@ -1,3 +1,7 @@
+# BehaviorTree5(Latest update: May 16th, 2026) - [Personal Tweaks]
+* Added the ability to modify the Task Template (Plugin)
+* Added support for PascalCase for start, finish & run (Start, Finish & Run) in tasks
+
 # BehaviorTree5(Latest update: May 5th, 2022)
 
 This module is a fork of BehaviorTrees2 by oniich_n. The following are the improvements/changes:
