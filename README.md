@@ -2,7 +2,7 @@
 * Added the ability to modify the Task Template (Plugin)
 * Added support for PascalCase for start, finish & run (Start, Finish & Run) in tasks
 
-# BehaviorTree5(Latest update: May 5th, 2022)
+# BehaviorTree5 (May 5th, 2022)
 
 This module is a fork of BehaviorTrees2 by oniich_n. The following are the improvements/changes:
 * Previously, Decorators would only work when parented to Task node. Now, they can be placed arbitrarily, and even chained together, and will work as expected. Internally, decorators work slightly differently, but I preserved the clever and efficient tree traversal algorithm that oniich_n implemented in BehaviorTrees2. Should still be just as fast.
